@@ -9,8 +9,7 @@ const wchar_t CLASS_NAME[] = L"Sample Window Class";
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    // Register the window class.
-    WNDCLASS wc = {};
+    WNDCLASS wc = { 0 };
 
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
@@ -18,7 +17,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     RegisterClass(&wc);
 
-    // Create the window.
     HWND hwnd = CreateWindowEx(
         0,                          // Optional window styles.
         CLASS_NAME,                 // Window class
@@ -59,12 +57,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
-            // All painting occurs here, between BeginPaint and EndPaint.
-            FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
+            RECT rect;
+            GetClientRect(hwnd, &rect); // Get the dimensions of the window's client area
+            FillRect(hdc, &rect, (HBRUSH)(COLOR_WINDOW+1)); // Fill the background
+
+            DrawText(hdc, L"Hello, World!", -1, &rect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
             EndPaint(hwnd, &ps);
+            return 0;
         }
-        return 0;
+        case WM_SIZE: {
+            // Invalidate the window to trigger a repaint
+            InvalidateRect(hwnd, NULL, TRUE);
+            return 0;
+        }
+        default:
+            return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
+
